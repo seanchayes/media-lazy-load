@@ -46,6 +46,7 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 				add_filter( 'get_image_tag', array( $this, 'lazy_data_src' ), 10, 6 );
 				add_filter( 'wp_get_attachment_image_attributes', array( $this, 'lazy_image_attributes' ), 10, 3 );
 				add_filter( 'get_image_tag_class', array( $this, 'lazy_img_tag_markup' ), 10, 4 );
+				add_filter( 'get_avatar', array( $this, 'lazy_img_avatar_tag_markup' ), 10, 8 );
 				add_filter( 'the_content', array( $this, 'lazy_process_img_tags_content' ) );
 				add_filter( 'wp_kses_allowed_html', array( $this, 'filter_wp_kses_allowed_custom_attributes' ) );
 			}
@@ -168,6 +169,29 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 			}
 
 			return $class;
+		}
+
+		/**
+		 * @param $avatar
+		 * @param $id_or_email
+		 * @param $size
+		 * @param $default
+		 * @param $alt
+		 * @param $args
+		 *
+		 * @return mixed
+		 *              Add lazy load support to avatars
+		 */
+		public function lazy_img_avatar_tag_markup( $avatar, $id_or_email, $size, $default, $alt, $args ) {
+			// Possibly add conditional checks here
+			preg_match( '/class=[\'\"]([^\'|\"]+)/', $avatar, $matches );
+			if ( stristr( $avatar, $this->lazy_class ) === false ) {
+				$original = $matches[1];
+				$replace = $matches[1].' '.$this->lazy_class;
+				$avatar = str_replace($original,$replace,$avatar);
+			}
+
+			return $avatar;
 		}
 
 		/**
