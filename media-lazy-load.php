@@ -45,6 +45,7 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 			if(!is_admin()) {
 				add_filter( 'get_image_tag', array( $this, 'lazy_data_src' ), 10, 6 );
 				add_filter( 'wp_get_attachment_image_attributes', array( $this, 'lazy_image_attributes' ), 10, 3 );
+//				add_filter( 'wp_get_attachment_image_src', array( $this, 'lazy_image_attributes' ), 10, 3 );
 				add_filter( 'get_image_tag_class', array( $this, 'lazy_img_tag_markup' ), 10, 4 );
 				add_filter( 'get_avatar', array( $this, 'lazy_img_avatar_tag_markup' ), 10, 8 );
 				add_filter( 'the_content', array( $this, 'lazy_process_img_tags_content' ) );
