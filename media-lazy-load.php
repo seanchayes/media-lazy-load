@@ -69,7 +69,9 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 *              Switch src attribute of image tag to data-src for lazy load
 		 */
 		public function lazy_data_src( $html, $id, $alt, $title, $align, $size ) {
-			// Possibly add conditional checks here
+			if ( is_admin() ) {
+				return $html;
+			}
 			$html = str_replace( ' src=', ' data-src=', $html );
 
 			return $html;
@@ -84,11 +86,9 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 *
 		 */
 		public function lazy_process_img_tags_content( $html ) {
-			$elements = array(
-				'img',
-				'iframe',
-				'video',
-			);
+			if ( is_feed() ) {
+				return $html;
+			}
 			// Handle images
 			$result = preg_match_all( '/<img [^>]+>/', $html, $matches ); // gets all image tags
 			// Now search / replace tag with a hash to find later
@@ -143,7 +143,9 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 *              Add lazy loading class to image markup and related data-src too
 		 */
 		public function lazy_image_attributes( $attr, $attachment, $size ) {
-			// Possibly add conditional checks here
+			if ( is_admin() || is_feed() ) {
+				return $attr;
+			}
 			$attr['data-src'] = $attr['src'];
 			unset( $attr['src'] );
 			if ( stristr( $attr['class'], $this->lazy_class ) === false ) {
@@ -163,7 +165,9 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 *               Add lazy class to image tag markup
 		 */
 		public function lazy_img_tag_markup( $class, $id, $align, $size ) {
-			// Possibly add conditional checks here
+			if ( is_admin() || is_feed() ) {
+				return $class;
+			}
 			if ( stristr( $class, $this->lazy_class ) === false ) {
 				$class .= ' '.$this->lazy_class;
 			}
@@ -183,7 +187,9 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 *              Add lazy load support to avatars
 		 */
 		public function lazy_img_avatar_tag_markup( $avatar, $id_or_email, $size, $default, $alt, $args ) {
-			// Possibly add conditional checks here
+			if ( is_admin() || is_feed() ) {
+				return $avatar;
+			}
 			preg_match( '/class=[\'\"]([^\'|\"]+)/', $avatar, $matches );
 			if ( stristr( $avatar, $this->lazy_class ) === false ) {
 				$original = $matches[1];
