@@ -3,7 +3,7 @@
 Plugin Name: Media Lazy Load
 Plugin URI: https://wordpress.org/plugins/media-lazy-load/
 Description: A simple plugin to help reduce initial page bandwidth for web; uses the browsers intersection API to load media when necessary rather than load all media on page load.
-Version: 0.1
+Version: 0.11
 Text Domain: media-lazy-load
 Domain Path: /languages
 Author: Sean Hayes
@@ -99,8 +99,14 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 						$saved_img_hash = '#' . md5( $img_to_process ) . '#';
 						$html           = str_replace( $img_to_process, $saved_img_hash, $html ); // Save place of original markup
 						$class_lazy     = $class . ' ' . $this->lazy_class;
-						$img_to_process = preg_replace( '/src=/', 'data-src=', $img_to_process );
-						$img_to_process = preg_replace( '/srcset=/', 'data-srcset=', $img_to_process );
+						// If markup already includes a srcset then do not change src to data-src
+						$img_to_process = preg_replace( '/srcset=/', 'data-srcset=', $img_to_process, -1, $number_replaced );
+						if ( ! $number_replaced ) {
+							$img_to_process = preg_replace( '/src=/', 'data-src=', $img_to_process );
+						}
+						if ( $number_replaced ) {
+							$img_to_process = preg_replace( '/src=/', '', $img_to_process );
+						}
 						$img_to_process = preg_replace( '/sizes=/', 'data-sizes=', $img_to_process );
 						$html_img       = empty($class) ? str_replace( 'img', 'img class="'.$this->lazy_class.'"', $img_to_process ) : str_replace( $class, $class_lazy, $img_to_process );
 						$html           = str_replace( $saved_img_hash, $html_img, $html );
@@ -147,7 +153,9 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 				return $attr;
 			}
 			$attr['data-src'] = $attr['src'];
+			$attr['data-srcset'] = $attr['srcset'];
 			unset( $attr['src'] );
+			unset( $attr['srcset'] );
 			if ( stristr( $attr['class'], $this->lazy_class ) === false ) {
 				$attr['class'] .= ' '.$this->lazy_class;
 			}

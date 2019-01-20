@@ -5,11 +5,11 @@ Tags: images, lazy-load, performance
 Requires at least: 4.9
 Requires PHP: 7.1
 Tested up to: 5.03
-Stable tag: 0.1
+Stable tag: 0.11
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-A simple plugin to help reduce initial page bandwidth for web; uses the browsers intersection API to load media when necessary rather than load all media on page load.
+A simple plugin to help reduce initial page bandwidth for websites; uses the browser intersection API to load media when necessary rather than load all media on page load.
 Inspired by multiple efforts to optimize web page loads using https://web.dev/ or Lighthouse audits from my Chrome browser
 
 == Description ==
@@ -17,6 +17,8 @@ Inspired by multiple efforts to optimize web page loads using https://web.dev/ o
 Based on the best practice software to detect and lazy load media
 
 Lazy load library used: https://github.com/aFarkas/lazysizes
+
+Handles lazy load of iframe based embeds
 
 == Installation ==
 
