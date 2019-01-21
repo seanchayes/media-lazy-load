@@ -242,7 +242,11 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		}
 		/**
 		 * Load lazysizes scripts async
+		 * @param $tag
+		 * @param $handle
+		 * @param $src
 		 *
+		 * @return string|string[]|null
 		 */
 		public function filter_script_async( $tag, $handle, $src ) {
 			if ( ! in_array( $handle, $this->mll_scripts, true ) ) {
