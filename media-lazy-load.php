@@ -2,7 +2,7 @@
 /*
 Plugin Name: Media Lazy Load
 Plugin URI: https://wordpress.org/plugins/media-lazy-load/
-Description: A simple plugin to help reduce initial page bandwidth for web; uses the browsers intersection API to load media when necessary rather than load all media on page load.
+Description: A simple plugin to help reduce initial page bandwidth for web; incorporates lazysizes.js which uses the browsers intersection API to load media when necessary rather than load all media on page load.
 Version: 0.11
 Text Domain: media-lazy-load
 Domain Path: /languages
@@ -21,7 +21,8 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 	class MediaLazyLoad {
 
 		private static $instance;
-		private $lazy_class;
+		private $mll_lazy_class;
+		private $mll_scripts;
 
 		public static function get_instance() {
 
@@ -35,7 +36,11 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		}
 
 		public function __construct(  ) {
-			$this->lazy_class = 'lazyload';
+			$this->mll_lazy_class = 'lazyload';
+			$this->mll_scripts    = array(
+				'media-lazy-load-loader',
+				'media-lazy-load-unveilhooks',
+			);
 		}
 		private function setup_actions() {
 			add_action( 'wp_enqueue_scripts', array( $this, 'action_enqueue_scripts' ) );
@@ -43,6 +48,7 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 
 		private function setup_filters() {
 			if(!is_admin()) {
+				add_filter( 'script_loader_tag', array( $this, 'filter_script_async' ), 10, 6 );
 				add_filter( 'get_image_tag', array( $this, 'lazy_data_src' ), 10, 6 );
 				add_filter( 'wp_get_attachment_image_attributes', array( $this, 'lazy_image_attributes' ), 10, 3 );
 				add_filter( 'get_image_tag_class', array( $this, 'lazy_img_tag_markup' ), 10, 4 );
@@ -53,8 +59,19 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		}
 
 		public function action_enqueue_scripts() {
-			wp_enqueue_script( 'lazy-load-unveilhooks', plugin_dir_url( __FILE__ ) . 'assets/js/ls.unveilhooks.min.js', [], null, true );
-			wp_enqueue_script( 'lazy-load-loader', plugin_dir_url( __FILE__ ) . 'assets/js/lazysizes.min.js', [], null, true );
+			wp_enqueue_script( 'media-lazy-load-unveilhooks', plugin_dir_url( __FILE__ ) . 'assets/js/ls.unveilhooks.min.js', [], null, true );
+			wp_enqueue_script( 'media-lazy-load-loader', plugin_dir_url( __FILE__ ) . 'assets/js/lazysizes.min.js', [], null, true );
+			wp_add_inline_style( 'media-lazy-load-loader', '
+/* fade image in after load */
+.lazyload,
+.lazyloading {
+	opacity: 0;
+}
+.lazyloaded {
+	opacity: 1;
+	transition: opacity 300ms;
+}
+');
 		}
 
 		/**
@@ -95,20 +112,21 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 			if ( $result ) {
 				foreach ( $matches[0] as $img_to_process ) {
 					$class = preg_match( '/class="([^"]+)"/', $img_to_process, $match_src ) ? $match_src[1] : '';
-					if ( stristr( $class, $this->lazy_class ) === false ) {
+					if ( stristr( $class, $this->mll_lazy_class ) === false ) {
 						$saved_img_hash = '#' . md5( $img_to_process ) . '#';
 						$html           = str_replace( $img_to_process, $saved_img_hash, $html ); // Save place of original markup
-						$class_lazy     = $class . ' ' . $this->lazy_class;
+						$class_lazy     = $class . ' ' . $this->mll_lazy_class;
 						// If markup already includes a srcset then do not change src to data-src
 						$img_to_process = preg_replace( '/srcset=/', 'data-srcset=', $img_to_process, -1, $number_replaced );
 						if ( ! $number_replaced ) {
 							$img_to_process = preg_replace( '/src=/', 'data-src=', $img_to_process );
 						}
+						// Remove src entry to prevent duplicated img loading
 						if ( $number_replaced ) {
 							$img_to_process = preg_replace( '/src=/', '', $img_to_process );
 						}
 						$img_to_process = preg_replace( '/sizes=/', 'data-sizes=', $img_to_process );
-						$html_img       = empty($class) ? str_replace( 'img', 'img class="'.$this->lazy_class.'"', $img_to_process ) : str_replace( $class, $class_lazy, $img_to_process );
+						$html_img       = empty($class) ? str_replace( 'img', 'img class="'.$this->mll_lazy_class . '"', $img_to_process ) : str_replace( $class, $class_lazy, $img_to_process );
 						$html           = str_replace( $saved_img_hash, $html_img, $html );
 					}
 				}
@@ -118,15 +136,15 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 			if ( $result ) {
 				foreach ( $matches[0] as $iframe_to_process ) {
 					$class = preg_match( '/class="([^"]+)"/', $iframe_to_process, $match_src ) ? $match_src[1] : '';
-					if ( stristr( $class, $this->lazy_class ) === false ) {
+					if ( stristr( $class, $this->mll_lazy_class ) === false ) {
 						$saved_img_hash = '#' . md5( $iframe_to_process ) . '#';
 						$html           = str_replace( $iframe_to_process, $saved_img_hash, $html ); // Save place of original markup
-						$class_lazy     = $class . ' ' . $this->lazy_class;
+						$class_lazy     = $class . ' ' . $this->mll_lazy_class;
 						$iframe_to_process = preg_replace( '/src=/', 'data-src=', $iframe_to_process );
 						$iframe_to_process = preg_replace( '/srcset=/', 'data-srcset=', $iframe_to_process );
 						$iframe_to_process = preg_replace( '/sizes=/', 'data-sizes=', $iframe_to_process );
 						if (empty($class)) {
-							$iframe_to_process = str_replace( 'iframe', 'iframe class="'.$this->lazy_class.'"', $iframe_to_process );
+							$iframe_to_process = str_replace( 'iframe', 'iframe class="'.$this->mll_lazy_class . '"', $iframe_to_process );
 						}
 						$html_iframe       = str_replace( $class, $class_lazy, $iframe_to_process );
 						$html           = str_replace( $saved_img_hash, $html_iframe, $html );
@@ -156,8 +174,8 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 			$attr['data-srcset'] = $attr['srcset'];
 			unset( $attr['src'] );
 			unset( $attr['srcset'] );
-			if ( stristr( $attr['class'], $this->lazy_class ) === false ) {
-				$attr['class'] .= ' '.$this->lazy_class;
+			if ( stristr( $attr['class'], $this->mll_lazy_class ) === false ) {
+				$attr['class'] .= ' '.$this->mll_lazy_class;
 			}
 
 			return $attr;
@@ -176,8 +194,8 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 			if ( is_admin() || is_feed() ) {
 				return $class;
 			}
-			if ( stristr( $class, $this->lazy_class ) === false ) {
-				$class .= ' '.$this->lazy_class;
+			if ( stristr( $class, $this->mll_lazy_class ) === false ) {
+				$class .= ' '.$this->mll_lazy_class;
 			}
 
 			return $class;
@@ -199,9 +217,9 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 				return $avatar;
 			}
 			preg_match( '/class=[\'\"]([^\'|\"]+)/', $avatar, $matches );
-			if ( stristr( $avatar, $this->lazy_class ) === false ) {
+			if ( stristr( $avatar, $this->mll_lazy_class ) === false ) {
 				$original = $matches[1];
-				$replace = $matches[1].' '.$this->lazy_class;
+				$replace = $matches[1].' '.$this->mll_lazy_class;
 				$avatar = str_replace($original,$replace,$avatar);
 			}
 
@@ -221,6 +239,17 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 				] ),
 			];
 			return array_merge( $allowed_html, $mll_custom_element_attributes );
+		}
+		/**
+		 * Load lazysizes scripts async
+		 *
+		 */
+		public function filter_script_async( $tag, $handle, $src ) {
+			if ( ! in_array( $handle, $this->mll_scripts, true ) ) {
+				return $tag;
+			}
+
+			return preg_replace( '/^<script /i', '<script async="async" ', $tag );
 		}
 	}
 	MediaLazyLoad::get_instance();

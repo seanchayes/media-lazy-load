@@ -1,7 +1,7 @@
 === Featured Image Admin Thumb ===
 Contributors: seanchayes
 Donate link: https://seanhayes.biz/
-Tags: images, lazy-load, performance
+Tags: images, lazy-load, performance, images, speed
 Requires at least: 4.9
 Requires PHP: 7.1
 Tested up to: 5.03
