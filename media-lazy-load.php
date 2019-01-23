@@ -12,6 +12,10 @@ License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
 
+namespace MediaLazyLoad;
+
+use DOMDocument;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -154,11 +158,36 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 					}
 				}
 			}
+			// Handle background / cover images from Gutenberg
+			// background-image:url(http://local.wordpress.test/wp-content/uploads/2018/05/30781920-0a84-31de-95ff-43bb98c45145-1024x768.jpg)
+			$html  = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8");
+			$document = new DOMDocument();
+			libxml_use_internal_errors(true);
+			$document->loadHTML(utf8_decode($html));
+			$divs = $document->getElementsByTagName('div' );
 
+			foreach( $divs as $div ) {
+				if ( false !== stristr( $div->getAttribute( 'class' ), 'wp-block-cover' ) ) {
+					$div_style = $div->getAttribute( 'style' );
+					if ( $div_style ) {
+						$url = preg_match( '/background-image\:url\((.+)\)/', $div_style, $matches_div );
+						if ( 1 === $url ) {
+							$div->setAttribute( 'data-bg', $matches_div[1] );
+							$replaced_style = preg_replace( '/background-image\:url\((.+)\)/', '', $div_style );
+							$div->setAttribute( 'style', $replaced_style );
+						}
+						$div_classes = $div->getAttribute( 'class' );
+						if ( stristr( $div_classes, $this->mll_lazy_class ) === false ) {
+							$div_classes .= ' ' . $this->mll_lazy_class;
+						}
+						$div->setAttribute( 'class', $div_classes );
+					}
+				}
+			}
 			// Handle videos
 			// Handle switch to WebP
 
-			return $html;
+			return $document->saveHTML();
 		}
 
 		/**
