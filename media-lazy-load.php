@@ -59,8 +59,8 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		}
 
 		public function action_enqueue_scripts() {
-			wp_enqueue_script( 'media-lazy-load-unveilhooks', plugin_dir_url( __FILE__ ) . 'assets/js/ls.unveilhooks.min.js', [], null, true );
-			wp_enqueue_script( 'media-lazy-load-loader', plugin_dir_url( __FILE__ ) . 'assets/js/lazysizes.min.js', [], null, true );
+			wp_enqueue_script( 'media-lazy-load-unveilhooks', plugin_dir_url( MLL_FILE ) . 'assets/js/ls.unveilhooks.min.js', [], null, true );
+			wp_enqueue_script( 'media-lazy-load-loader', plugin_dir_url( MLL_FILE ) . 'assets/js/lazysizes.min.js', [], null, true );
 			wp_add_inline_style( 'media-lazy-load-loader', '
 /* fade image in after load */
 .lazyload,
@@ -86,7 +86,8 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 *              Switch src attribute of image tag to data-src for lazy load
 		 */
 		public function lazy_data_src( $html, $id, $alt, $title, $align, $size ) {
-			if ( is_admin() ) {
+			$doing_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
+			if ( is_feed() || is_admin() || $doing_rest ) {
 				return $html;
 			}
 			$html = str_replace( ' src=', ' data-src=', $html );
@@ -100,10 +101,12 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 * @return mixed|string|string[]|null
 		 * When displaying the content find all img tags, save them
 		 * process for lazy load and return modified html
-		 *
+		 * Check for REST request and do not add the class so as not to
+		 * disrupt the editing experience for Gutenberg (is_admin is not in play)
 		 */
 		public function lazy_process_img_tags_content( $html ) {
-			if ( is_feed() ) {
+			$doing_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
+			if ( is_feed() || is_admin() || $doing_rest ) {
 				return $html;
 			}
 			// Handle images
@@ -137,9 +140,9 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 				foreach ( $matches[0] as $iframe_to_process ) {
 					$class = preg_match( '/class="([^"]+)"/', $iframe_to_process, $match_src ) ? $match_src[1] : '';
 					if ( stristr( $class, $this->mll_lazy_class ) === false ) {
-						$saved_img_hash = '#' . md5( $iframe_to_process ) . '#';
-						$html           = str_replace( $iframe_to_process, $saved_img_hash, $html ); // Save place of original markup
-						$class_lazy     = $class . ' ' . $this->mll_lazy_class;
+						$saved_img_hash    = '#' . md5( $iframe_to_process ) . '#';
+						$html              = str_replace( $iframe_to_process, $saved_img_hash, $html ); // Save place of original markup
+						$class_lazy        = $class . ' ' . $this->mll_lazy_class;
 						$iframe_to_process = preg_replace( '/src=/', 'data-src=', $iframe_to_process );
 						$iframe_to_process = preg_replace( '/srcset=/', 'data-srcset=', $iframe_to_process );
 						$iframe_to_process = preg_replace( '/sizes=/', 'data-sizes=', $iframe_to_process );
@@ -147,7 +150,7 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 							$iframe_to_process = str_replace( 'iframe', 'iframe class="'.$this->mll_lazy_class . '"', $iframe_to_process );
 						}
 						$html_iframe       = str_replace( $class, $class_lazy, $iframe_to_process );
-						$html           = str_replace( $saved_img_hash, $html_iframe, $html );
+						$html              = str_replace( $saved_img_hash, $html_iframe, $html );
 					}
 				}
 			}
@@ -167,7 +170,8 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 *              Add lazy loading class to image markup and related data-src too
 		 */
 		public function lazy_image_attributes( $attr, $attachment, $size ) {
-			if ( is_admin() || is_feed() ) {
+			$doing_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
+			if ( is_admin() || is_feed() || $doing_rest ) {
 				return $attr;
 			}
 			$attr['data-src'] = $attr['src'];
@@ -191,7 +195,8 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 *               Add lazy class to image tag markup
 		 */
 		public function lazy_img_tag_markup( $class, $id, $align, $size ) {
-			if ( is_admin() || is_feed() ) {
+			$doing_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
+			if ( is_admin() || is_feed() || $doing_rest ) {
 				return $class;
 			}
 			if ( stristr( $class, $this->mll_lazy_class ) === false ) {
@@ -213,7 +218,8 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 *              Add lazy load support to avatars
 		 */
 		public function lazy_img_avatar_tag_markup( $avatar, $id_or_email, $size, $default, $alt, $args ) {
-			if ( is_admin() || is_feed() ) {
+			$doing_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
+			if ( is_admin() || is_feed() || $doing_rest ) {
 				return $avatar;
 			}
 			preg_match( '/class=[\'\"]([^\'|\"]+)/', $avatar, $matches );

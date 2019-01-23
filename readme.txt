@@ -9,16 +9,20 @@ Stable tag: 0.11
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-A simple plugin to help reduce initial page bandwidth for websites; uses the browser intersection API to load media when necessary rather than load all media on page load.
+A simple plugin to help reduce initial page bandwidth for websites; uses the browser intersection API to load images, iframes when necessary rather than trigger requests on page load.
 Inspired by multiple efforts to optimize web page loads using https://web.dev/ or Lighthouse audits from my Chrome browser
 
 == Description ==
 
-Based on the best practice software to detect and lazy load media
+Based on the best practice software to detect and lazy load media this plugin adds the scripts and markup to your images and iframes.
 
-Lazy load library used: https://github.com/aFarkas/lazysizes
+Works with galleries too.
+
+Lazy load library used: https://github.com/aFarkas/lazysizes - thank you
 
 Handles lazy load of iframe based embeds
+
+Contributes to improved results in Lighthouse audits or audits run from https://web.dev/
 
 == Installation ==
 
