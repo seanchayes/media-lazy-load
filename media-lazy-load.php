@@ -160,6 +160,10 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 			}
 			// Handle background / cover images from Gutenberg
 			// background-image:url(http://local.wordpress.test/wp-content/uploads/2018/05/30781920-0a84-31de-95ff-43bb98c45145-1024x768.jpg)
+			// background:url(http://local.wordpress.test/wp-content/uploads/2018/05/30781920-0a84-31de-95ff-43bb98c45145-1024x768.jpg)
+			// background(?:\-image)?\:(?:url\()(.+)(?:\))
+			// background(?:\-image)?\:(?:.*?url\()(.+)(?:\))
+			// background(?:\-image)?\:(?:.*?url\()([^\)]+)(?:\))
 			$html  = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8");
 			$document = new DOMDocument();
 			libxml_use_internal_errors(true);
