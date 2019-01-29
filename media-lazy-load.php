@@ -51,7 +51,7 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		}
 
 		private function setup_filters() {
-			if(!is_admin()) {
+			if( !is_admin() ) {
 				add_filter( 'script_loader_tag', array( $this, 'filter_script_async' ), 10, 6 );
 				add_filter( 'get_image_tag', array( $this, 'lazy_data_src' ), 10, 6 );
 				add_filter( 'wp_get_attachment_image_attributes', array( $this, 'lazy_image_attributes' ), 10, 3 );
@@ -62,20 +62,26 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 			}
 		}
 
+		/**
+		 * Enqueue Lazy sizes scripts
+		 */
 		public function action_enqueue_scripts() {
+			if ( is_feed() || is_admin() || is_customize_preview() ) {
+				return;
+			}
 			wp_enqueue_script( 'media-lazy-load-unveilhooks', plugin_dir_url( MLL_FILE ) . 'assets/js/ls.unveilhooks.min.js', [], null, true );
 			wp_enqueue_script( 'media-lazy-load-loader', plugin_dir_url( MLL_FILE ) . 'assets/js/lazysizes.min.js', [], null, true );
 			wp_add_inline_style( 'media-lazy-load-loader', '
 /* fade image in after load */
 .lazyload,
 .lazyloading {
-	opacity: 0;
+opacity: 0;
 }
 .lazyloaded {
-	opacity: 1;
-	transition: opacity 300ms;
+opacity: 1;
+transition: opacity 300ms;
 }
-');
+' );
 		}
 
 		/**
@@ -91,7 +97,7 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 */
 		public function lazy_data_src( $html, $id, $alt, $title, $align, $size ) {
 			$doing_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
-			if ( is_feed() || is_admin() || $doing_rest ) {
+			if ( is_feed() || is_admin() || $doing_rest || is_customize_preview() ) {
 				return $html;
 			}
 			$html = str_replace( ' src=', ' data-src=', $html );
@@ -103,14 +109,14 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 * @param $html
 		 *
 		 * @return mixed|string|string[]|null
-		 * When displaying the content find all img tags, save them
-		 * process for lazy load and return modified html
+		 * When displaying the_content find all img tags, save them.
+		 * Then process for lazy load and return modified html
 		 * Check for REST request and do not add the class so as not to
 		 * disrupt the editing experience for Gutenberg (is_admin is not in play)
 		 */
 		public function lazy_process_img_tags_content( $html ) {
 			$doing_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
-			if ( is_feed() || is_admin() || $doing_rest ) {
+			if ( is_feed() || is_admin() || $doing_rest || is_customize_preview() ) {
 				return $html;
 			}
 			// Handle images
@@ -137,6 +143,10 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 						$html           = str_replace( $saved_img_hash, $html_img, $html );
 					}
 				}
+				unset( $result );
+				unset( $matches );
+				unset( $class_lazy );
+				unset( $match_src );
 			}
 			// Handle iframes
 			$result = preg_match_all( '/<iframe [^>]+>/', $html, $matches ); // gets all iframe tags
@@ -144,8 +154,8 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 				foreach ( $matches[0] as $iframe_to_process ) {
 					$class = preg_match( '/class="([^"]+)"/', $iframe_to_process, $match_src ) ? $match_src[1] : '';
 					if ( stristr( $class, $this->mll_lazy_class ) === false ) {
-						$saved_img_hash    = '#' . md5( $iframe_to_process ) . '#';
-						$html              = str_replace( $iframe_to_process, $saved_img_hash, $html ); // Save place of original markup
+						$saved_iframe_hash = '#' . md5( $iframe_to_process ) . '#';
+						$html              = str_replace( $iframe_to_process, $saved_iframe_hash, $html ); // Save place of original markup
 						$class_lazy        = $class . ' ' . $this->mll_lazy_class;
 						$iframe_to_process = preg_replace( '/src=/', 'data-src=', $iframe_to_process );
 						$iframe_to_process = preg_replace( '/srcset=/', 'data-srcset=', $iframe_to_process );
@@ -154,30 +164,25 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 							$iframe_to_process = str_replace( 'iframe', 'iframe class="'.$this->mll_lazy_class . '"', $iframe_to_process );
 						}
 						$html_iframe       = str_replace( $class, $class_lazy, $iframe_to_process );
-						$html              = str_replace( $saved_img_hash, $html_iframe, $html );
+						$html              = str_replace( $saved_iframe_hash, $html_iframe, $html );
 					}
 				}
 			}
 			// Handle background / cover images from Gutenberg
-			// background-image:url(http://local.wordpress.test/wp-content/uploads/2018/05/30781920-0a84-31de-95ff-43bb98c45145-1024x768.jpg)
-			// background:url(http://local.wordpress.test/wp-content/uploads/2018/05/30781920-0a84-31de-95ff-43bb98c45145-1024x768.jpg)
-			// background(?:\-image)?\:(?:url\()(.+)(?:\))
-			// background(?:\-image)?\:(?:.*?url\()(.+)(?:\))
-			// background(?:\-image)?\:(?:.*?url\()([^\)]+)(?:\))
 			$html  = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8");
 			$document = new DOMDocument();
 			libxml_use_internal_errors(true);
 			$document->loadHTML(utf8_decode($html));
 			$divs = $document->getElementsByTagName('div' );
-
+			$bg_image_pattern = '/background(?:\-image)?\:(?:.*?url\((?:")?)([^\)|"]+)(?:\))*/';
 			foreach( $divs as $div ) {
 				if ( false !== stristr( $div->getAttribute( 'class' ), 'wp-block-cover' ) ) {
 					$div_style = $div->getAttribute( 'style' );
 					if ( $div_style ) {
-						$url = preg_match( '/background-image\:url\((.+)\)/', $div_style, $matches_div );
+						$url = preg_match( $bg_image_pattern, $div_style, $matches_div );
 						if ( 1 === $url ) {
 							$div->setAttribute( 'data-bg', $matches_div[1] );
-							$replaced_style = preg_replace( '/background-image\:url\((.+)\)/', '', $div_style );
+							$replaced_style = str_replace( $matches_div[0], '', $div_style );
 							$div->setAttribute( 'style', $replaced_style );
 						}
 						$div_classes = $div->getAttribute( 'class' );
@@ -188,9 +193,6 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 					}
 				}
 			}
-			// Handle videos
-			// Handle switch to WebP
-
 			return $document->saveHTML();
 		}
 
@@ -204,7 +206,7 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 */
 		public function lazy_image_attributes( $attr, $attachment, $size ) {
 			$doing_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
-			if ( is_admin() || is_feed() || $doing_rest ) {
+			if ( is_admin() || is_feed() || $doing_rest || is_customize_preview() ) {
 				return $attr;
 			}
 			$attr['data-src'] = $attr['src'];
@@ -229,7 +231,7 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 */
 		public function lazy_img_tag_markup( $class, $id, $align, $size ) {
 			$doing_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
-			if ( is_admin() || is_feed() || $doing_rest ) {
+			if ( is_admin() || is_feed() || $doing_rest || is_customize_preview() ) {
 				return $class;
 			}
 			if ( stristr( $class, $this->mll_lazy_class ) === false ) {
@@ -252,7 +254,7 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		 */
 		public function lazy_img_avatar_tag_markup( $avatar, $id_or_email, $size, $default, $alt, $args ) {
 			$doing_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
-			if ( is_admin() || is_feed() || $doing_rest ) {
+			if ( is_admin() || is_feed() || $doing_rest || is_customize_preview() ) {
 				return $avatar;
 			}
 			preg_match( '/class=[\'\"]([^\'|\"]+)/', $avatar, $matches );
