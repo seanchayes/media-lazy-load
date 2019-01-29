@@ -1,28 +1,28 @@
-=== Featured Image Admin Thumb ===
+=== Media Lazy Load ===
 Contributors: seanchayes
 Donate link: https://seanhayes.biz/
 Tags: images, lazy-load, performance, images, speed
 Requires at least: 4.9
 Requires PHP: 7.1
-Tested up to: 5.03
-Stable tag: 0.11
+Tested up to: 5.0
+Stable tag: 0.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-A simple plugin to help reduce initial page bandwidth for websites; uses the browser intersection API to load images, iframes when necessary rather than trigger requests on page load.
-Inspired by multiple efforts to optimize web page loads using https://web.dev/ or Lighthouse audits from my Chrome browser
+A plugin to reduce initial page bandwidth for website images; uses the browser intersection API to load images, iframes when coming into view.
 
 == Description ==
 
-Based on the best practice software to detect and lazy load media this plugin adds the scripts and markup to your images and iframes.
+Based on the best practice software to detect and lazy load media this plugin updates the markup in your images and iframes when rendering your page.
 
-Works with galleries too.
+* Reduce your site bandwidth on initial load.
+* Loads images and iframes to be ready for display in the browser viewport
+* Works with images inside galleries - only loading in the images when they are needed.
+* Works with images on category / archive pages.
+* With this plugin enabled it can contribute to improved results in Lighthouse audits or audits run from https://web.dev/
 
-Lazy load library used: https://github.com/aFarkas/lazysizes - thank you
+I use the [lazysizes lazy load library](https://github.com/aFarkas/lazysizes) - thank you
 
-Handles lazy load of iframe based embeds
-
-Contributes to improved results in Lighthouse audits or audits run from https://web.dev/
 
 == Installation ==
 
@@ -50,13 +50,17 @@ Contributes to improved results in Lighthouse audits or audits run from https://
 
 
 == Frequently Asked Questions ==
+Does it modify and save my markup?
+No, it only adjusts the display when displaying your content
 
 == Screenshots ==
 
 == Changelog ==
 
-0.1
-* First version
+= 0.2 =
+* Handling Gutenberg cover image, checking for customizer, REST request
+= 0.1 =
+* First version, adding lazysizes script, parsing markup, adding class to images and iframe based media
 
 == Upgrade Notice ==
 
