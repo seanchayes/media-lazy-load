@@ -53,11 +53,11 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 		private function setup_filters() {
 			if( !is_admin() ) {
 				add_filter( 'script_loader_tag', array( $this, 'filter_script_async' ), 10, 6 );
-				add_filter( 'get_image_tag', array( $this, 'lazy_data_src' ), 10, 6 );
+				add_filter( 'get_image_tag', array( $this, 'lazy_image_data_src' ), 10, 6 );
 				add_filter( 'wp_get_attachment_image_attributes', array( $this, 'lazy_image_attributes' ), 10, 3 );
 				add_filter( 'get_image_tag_class', array( $this, 'lazy_img_tag_markup' ), 10, 4 );
 				add_filter( 'get_avatar', array( $this, 'lazy_img_avatar_tag_markup' ), 10, 8 );
-				add_filter( 'the_content', array( $this, 'lazy_process_img_tags_content' ) );
+				add_filter( 'the_content', array( $this, 'lazy_process_media_tags_content' ) );
 				add_filter( 'wp_kses_allowed_html', array( $this, 'filter_wp_kses_allowed_custom_attributes' ) );
 			}
 		}
@@ -95,7 +95,7 @@ transition: opacity 300ms;
 		 * @return mixed
 		 *              Switch src attribute of image tag to data-src for lazy load
 		 */
-		public function lazy_data_src( $html, $id, $alt, $title, $align, $size ) {
+		public function lazy_image_data_src( $html, $id, $alt, $title, $align, $size ) {
 			$doing_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
 			if ( is_feed() || is_admin() || $doing_rest || is_customize_preview() ) {
 				return $html;
@@ -114,7 +114,7 @@ transition: opacity 300ms;
 		 * Check for REST request and do not add the class so as not to
 		 * disrupt the editing experience for Gutenberg (is_admin is not in play)
 		 */
-		public function lazy_process_img_tags_content( $html ) {
+		public function lazy_process_media_tags_content( $html ) {
 			$doing_rest = defined( 'REST_REQUEST' ) && REST_REQUEST;
 			if ( is_feed() || is_admin() || $doing_rest || is_customize_preview() ) {
 				return $html;
