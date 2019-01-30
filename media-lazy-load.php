@@ -58,6 +58,7 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 				add_filter( 'get_image_tag_class', array( $this, 'lazy_img_tag_markup' ), 10, 4 );
 				add_filter( 'get_avatar', array( $this, 'lazy_img_avatar_tag_markup' ), 10, 8 );
 				add_filter( 'the_content', array( $this, 'lazy_process_media_tags_content' ) );
+				add_filter( 'wp_video_shortcode', array( $this, 'lazy_process_video_tags_content' ), 10, 54 );
 				add_filter( 'wp_kses_allowed_html', array( $this, 'filter_wp_kses_allowed_custom_attributes' ) );
 			}
 		}
@@ -196,6 +197,33 @@ transition: opacity 300ms;
 			return $document->saveHTML();
 		}
 
+		/**
+		 * @param $output
+		 * @param $atts
+		 * @param $video
+		 * @param $post_id
+		 * @param $library
+		 *
+		 * @return mixed
+		 *              Handle standard video embed, see if we find a shortcode class entry, as poster
+		 *              and a preload and set them to match lazysizes needs before returning
+		 *              Or return original output untouched
+		 */
+		public function lazy_process_video_tags_content( $output, $atts, $video, $post_id, $library ) {
+			$result = preg_match( '/(?:<video)(?:\s)+class=(?:"[^"]+)"/', $output, $matches );
+			if( $result ) {
+				$class_update = str_replace( 'wp-video-shortcode', 'wp-video-shortcode ' . $this->mll_lazy_class, $output, $count );
+				if ( $count ) {
+					unset( $count );
+					$poster_update  = str_replace( 'poster', 'data-poster', $class_update, $count );
+					$preload_update = str_replace( 'preload="metadata"', 'preload="none"', $poster_update, $count );
+					if ( $count ) {
+						$output = $preload_update;
+					}
+				}
+			}
+			return $output;
+		}
 		/**
 		 * @param $attr
 		 * @param $attachment
