@@ -59,7 +59,7 @@ if ( ! class_exists( 'MediaLazyLoad' ) ) {
 				add_filter( 'get_avatar', array( $this, 'lazy_img_avatar_tag_markup' ), 10, 8 );
 				add_filter( 'the_content', array( $this, 'lazy_process_media_tags_content' ) );
 				add_filter( 'wp_video_shortcode', array( $this, 'lazy_process_video_tags_content' ), 10, 54 );
-				add_filter( 'wp_kses_allowed_html', array( $this, 'filter_wp_kses_allowed_custom_attributes' ) );
+				add_filter( 'wp_kses_allowed_html', array( $this, 'filter_wp_kses_allowed_custom_attributes' ), 10, 2 );
 			}
 		}
 
@@ -306,13 +306,16 @@ transition: opacity 300ms;
 		 * @return array
 		 *              Allow data-src through kses for image tags.
 		 */
-		public function filter_wp_kses_allowed_custom_attributes( $allowed_html ) {
-			$mll_custom_element_attributes = [
+		public function filter_wp_kses_allowed_custom_attributes( $allowed_html, $context ) {
+			if ( is_array( $context ) ) {
+				return $allowed_html;
+			}
+			$allowed_html = [
 				'img' => array_merge( $allowed_html['img'], [
 					'data-src' => true,
 				] ),
 			];
-			return array_merge( $allowed_html, $mll_custom_element_attributes );
+			return $allowed_html;
 		}
 		/**
 		 * Load lazysizes scripts async
