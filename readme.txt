@@ -60,6 +60,8 @@ No, it only adjusts the display during page generation when displaying your cont
 
 == Changelog ==
 
+= 0.2.1 =
+* Readme updates
 = 0.2 =
 * Handling Gutenberg cover image, Gutenberg gallery support, checking for customizer, REST request
 = 0.1 =
