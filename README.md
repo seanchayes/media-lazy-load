@@ -24,7 +24,12 @@ I use the [lazysizes lazy load library](https://github.com/aFarkas/lazysizes) - 
 This lazy load library came as a recommendation. I was running audits and the audit results referred to this library. You can find out more from [web.dev](https://web.dev/fast/use-lazysizes-to-lazyload-images)
 
 ## Installation
-You can clone this repo to your ```plugins``` folder or follow the regular WordPress instructions below
+You can clone this repo to your ```plugins``` folder and activate from your dashboard.
+ 
+**or**
+
+First, in this repository, click on "Clone or Download" and then "Download Zip".
+Then follow the regular WordPress instructions below.
 
 #### Using The WordPress Dashboard
 
