@@ -1,4 +1,4 @@
-=== Media Lazy Load ===
+#Media Lazy Load
 
 License: GPLv3
 
