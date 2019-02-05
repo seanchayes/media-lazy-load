@@ -4,7 +4,7 @@ Donate link: https://seanhayes.biz/
 Tags: images, lazy-load, performance, images, speed
 Requires at least: 4.9
 Requires PHP: 7.1
-Tested up to: 5.0
+Tested up to: 5.03
 Stable tag: 0.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
