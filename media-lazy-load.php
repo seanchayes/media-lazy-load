@@ -3,7 +3,7 @@
 Plugin Name: Media Lazy Load
 Plugin URI: https://wordpress.org/plugins/media-lazy-load/
 Description: A simple plugin to help reduce initial page bandwidth for web; incorporates lazysizes.js which uses the browsers intersection API to load media when necessary rather than load all media on page load.
-Version: 0.2
+Version: 0.2.1
 Text Domain: media-lazy-load
 Domain Path: /languages
 Author: Sean Hayes
