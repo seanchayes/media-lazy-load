@@ -309,11 +309,7 @@ transition: opacity 300ms;
 			if ( is_array( $context ) ) {
 				return $allowed_html;
 			}
-			$allowed_html = [
-				'img' => array_merge( $allowed_html['img'], [
-					'data-src' => true,
-				] ),
-			];
+			$allowed_html['img']['data-src'] = true;
 			return $allowed_html;
 		}
 		/**
