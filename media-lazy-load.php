@@ -127,8 +127,7 @@ transition: opacity 300ms;
 				foreach ( $matches[0] as $img_to_process ) {
 					$class = preg_match( '/class="([^"]+)"/', $img_to_process, $match_src ) ? $match_src[1] : '';
 					if ( stristr( $class, $this->mll_lazy_class ) === false ) {
-						$saved_img_hash = '#' . md5( $img_to_process ) . '#';
-						$html           = str_replace( $img_to_process, $saved_img_hash, $html ); // Save place of original markup
+						$original_image = $img_to_process;
 						$class_lazy     = $class . ' ' . $this->mll_lazy_class;
 						// If markup already includes a srcset then do not change src to data-src
 						$img_to_process = preg_replace( '/srcset=/', 'data-srcset=', $img_to_process, -1, $number_replaced );
@@ -141,11 +140,12 @@ transition: opacity 300ms;
 						}
 						$img_to_process = preg_replace( '/sizes=/', 'data-sizes=', $img_to_process );
 						$html_img       = empty($class) ? str_replace( 'img', 'img class="'.$this->mll_lazy_class . '"', $img_to_process ) : str_replace( $class, $class_lazy, $img_to_process );
-						$html           = str_replace( $saved_img_hash, $html_img, $html );
+						$html           = str_replace( $original_image, $html_img, $html );
 					}
 				}
 				unset( $result );
 				unset( $matches );
+				unset( $html_img );
 				unset( $class_lazy );
 				unset( $match_src );
 			}
@@ -155,8 +155,7 @@ transition: opacity 300ms;
 				foreach ( $matches[0] as $iframe_to_process ) {
 					$class = preg_match( '/class="([^"]+)"/', $iframe_to_process, $match_src ) ? $match_src[1] : '';
 					if ( stristr( $class, $this->mll_lazy_class ) === false ) {
-						$saved_iframe_hash = '#' . md5( $iframe_to_process ) . '#';
-						$html              = str_replace( $iframe_to_process, $saved_iframe_hash, $html ); // Save place of original markup
+						$original_iframe   = $iframe_to_process;
 						$class_lazy        = $class . ' ' . $this->mll_lazy_class;
 						$iframe_to_process = preg_replace( '/src=/', 'data-src=', $iframe_to_process );
 						$iframe_to_process = preg_replace( '/srcset=/', 'data-srcset=', $iframe_to_process );
@@ -165,7 +164,7 @@ transition: opacity 300ms;
 							$iframe_to_process = str_replace( 'iframe', 'iframe class="'.$this->mll_lazy_class . '"', $iframe_to_process );
 						}
 						$html_iframe       = str_replace( $class, $class_lazy, $iframe_to_process );
-						$html              = str_replace( $saved_iframe_hash, $html_iframe, $html );
+						$html              = str_replace( $original_iframe, $html_iframe, $html );
 					}
 				}
 			}
