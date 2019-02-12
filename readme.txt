@@ -1,7 +1,7 @@
 === Media Lazy Load ===
 Contributors: seanchayes
 Donate link: https://seanhayes.biz/
-Tags: images, lazy-load, performance, images, speed
+Tags: images, lazy-load, performance, speed
 Requires at least: 4.9
 Requires PHP: 7.1
 Tested up to: 5.03
@@ -9,11 +9,12 @@ Stable tag: 0.2.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-A plugin to reduce initial page bandwidth for website images; uses the browser intersection API to load images and iframes when coming into view.
+A plugin to reduce initial page bandwidth for website media; uses the browser intersection API to load images and iframes when coming into view.
 
 == Description ==
 
-Based on the best practice software to detect and lazy load media this plugin updates the markup in your images and iframes when rendering your page.
+Based on the best practice software to detect and lazy load media this plugin updates the markup to include the "lazyload" class in your images and iframes when rendering your page.
+There is no configuration.
 
 * Reduce your site bandwidth on initial load.
 * Then the plugin loads images and iframes to be ready for display in the browser viewport
@@ -24,8 +25,9 @@ Based on the best practice software to detect and lazy load media this plugin up
 * With this plugin enabled it can contribute to improved results in Lighthouse audits or audits run from https://web.dev/
 * Image tag markup is handled when it is generated with WordPress functions
 
-I use the [lazysizes lazy load library](https://github.com/aFarkas/lazysizes) - thank you
+I use the powerful [lazysizes lazy load library](https://github.com/aFarkas/lazysizes) - thank you
 This lazy load library came as  a recommendation from [web.dev use lazy sizes](https://web.dev/fast/use-lazysizes-to-lazyload-images)
+Following site performance audits I have used it extensively to help with reducing initial page weight and page load time.
 
 == Installation ==
 

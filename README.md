@@ -4,7 +4,7 @@ License: GPLv3
 
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-A plugin to reduce initial page bandwidth for website images; uses the browser intersection API to load images and iframes when coming into view.
+A plugin to reduce initial page bandwidth for website images and most iframes; uses the browser intersection API to load images and iframes when coming into view.
 
 ## Description
 
@@ -19,9 +19,9 @@ Based on the best practice software to detect and lazy load media this plugin up
 * With this plugin enabled it can contribute to improved results in Lighthouse audits or audits run from https://web.dev/
 * Image tag markup is handled when it is generated with WordPress functions
 
-I use the [lazysizes lazy load library](https://github.com/aFarkas/lazysizes) - thank you
+I use and include the [lazysizes lazy load library](https://github.com/aFarkas/lazysizes) - thank you
 
-This lazy load library came as a recommendation. I was running audits and the audit results referred to this library. You can find out more from [web.dev](https://web.dev/fast/use-lazysizes-to-lazyload-images)
+This lazy load library came as a recommendation. I was running website audits and the audit results referred to this library to help with image loading. You can find out more from [web.dev](https://web.dev/fast/use-lazysizes-to-lazyload-images)
 
 ## Installation
 You can clone this repo to your ```plugins``` folder and activate from your dashboard.
