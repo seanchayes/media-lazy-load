@@ -242,9 +242,11 @@ transition: opacity 300ms;
 				return $attr;
 			}
 			$attr['data-src'] = $attr['src'];
-			$attr['data-srcset'] = $attr['srcset'];
+			if( ! empty($attr['srcset'] ) ) {
+				$attr['data-srcset'] = $attr['srcset'];
+				unset( $attr['srcset'] );
+			}
 			unset( $attr['src'] );
-			unset( $attr['srcset'] );
 			if ( stristr( $attr['class'], $this->mll_lazy_class ) === false ) {
 				$attr['class'] .= ' '.$this->mll_lazy_class;
 			}
